@@ -1,14 +1,178 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لعبة سيارات</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friv Clone - Single Page</title>
+<style>
+body { margin:0; font-family: Arial,sans-serif; background:#8dd4f5; }
+header { background:#0099ff; color:white; text-align:center; padding:20px; font-size:24px; font-weight:bold; }
+.grid { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; padding:20px; }
+.game { width:140px; height:140px; background:white; border-radius:10px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-decoration:none; color:black; box-shadow:0 4px 6px rgba(0,0,0,0.2); cursor:pointer; transition: transform 0.2s; }
+.game:hover { transform: scale(1.05); }
+.game img { width:80px; height:80px; margin-bottom:10px; }
+.game p { margin:0; font-weight:bold; font-size:14px; }
+#gameArea { margin:20px auto; width:360px; height:640px; background:white; border-radius:10px; display:none; position:relative; overflow:hidden; }
+button { margin-top:10px; padding:5px 10px; font-size:14px; }
+</style>
 </head>
 <body>
-  <h1 class="title">🚗 لعبة السيارات</h1>
-  <canvas id="gameCanvas"></canvas>
-  <script src="game.js"></script>
+
+<header>Classic Games</header>
+
+<div class="grid">
+  <div class="game" onclick="startGame(1)"><img src="https://via.placeholder.com/80/FF0000/FFFFFF?text=1"><p>Game 1</p></div>
+  <div class="game" onclick="startGame(2)"><img src="https://via.placeholder.com/80/00FF00/FFFFFF?text=2"><p>Game 2</p></div>
+  <div class="game" onclick="startGame(3)"><img src="https://via.placeholder.com/80/0000FF/FFFFFF?text=3"><p>Game 3</p></div>
+  <div class="game" onclick="startGame(4)"><img src="https://via.placeholder.com/80/FFFF00/000000?text=4"><p>Game 4</p></div>
+  <div class="game" onclick="startGame(5)"><img src="https://via.placeholder.com/80/FF00FF/FFFFFF?text=5"><p>Game 5</p></div>
+</div>
+
+<div id="gameArea">
+  <canvas id="canvas" width="360" height="640"></canvas>
+  <br>
+  <button onclick="backToMenu()">Back to Menu</button>
+</div>
+
+<script>
+// ====== إدارة الألعاب ======
+let currentGame = 0;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function startGame(num) {
+  currentGame = num;
+  document.querySelector('.grid').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'block';
+  initGame();
+}
+
+function backToMenu() {
+  document.getElementById('gameArea').style.display = 'none';
+  document.querySelector('.grid').style.display = 'flex';
+  cancelAnimationFrame(animationId);
+}
+
+// ====== لعبة 1: كرة تتفادى العقبات ======
+let ball, obstacles, animationId, score;
+function initGame() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  score = 0;
+  if(currentGame===1){ initGame1(); }
+  else if(currentGame===2){ initGame2(); }
+  else if(currentGame===3){ initGame3(); }
+  else if(currentGame===4){ initGame4(); }
+  else if(currentGame===5){ initGame5(); }
+}
+
+// ====== Game 1 ======
+function initGame1() {
+  ball = {x:180, y:580, r:15, dx:0};
+  obstacles = [];
+  document.addEventListener('keydown', keyDown1);
+  gameLoop1();
+}
+function keyDown1(e) {
+  if(e.key==='ArrowLeft') ball.dx = -5;
+  if(e.key==='ArrowRight') ball.dx = 5;
+}
+function gameLoop1() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ball.x += ball.dx;
+  if(ball.x<ball.r) ball.x=ball.r;
+  if(ball.x>canvas.width-ball.r) ball.x=canvas.width-ball.r;
+
+  // Obstacles
+  if(Math.random()<0.02){
+    obstacles.push({x:Math.random()*330, y:0, w:30, h:30});
+  }
+  for(let i=0;i<obstacles.length;i++){
+    obstacles[i].y +=3;
+    ctx.fillStyle='red';
+    ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].w, obstacles[i].h);
+    if(obstacles[i].y>canvas.height) obstacles.splice(i,1);
+    // Collision
+    if(ball.x+ball.r>obstacles[i].x && ball.x-ball.r<obstacles[i].x+obstacles[i].w &&
+       ball.y+ball.r>obstacles[i].y && ball.y-ball.r<obstacles[i].y+obstacles[i].h){
+         alert('Game Over! Score: '+score);
+         backToMenu();
+         return;
+       }
+  }
+
+  // Draw ball
+  ctx.fillStyle='blue';
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r,0,Math.PI*2);
+  ctx.fill();
+  score++;
+  ctx.fillStyle='black';
+  ctx.fillText("Score: "+score,10,20);
+
+  animationId = requestAnimationFrame(gameLoop1);
+}
+
+// ====== Game 2: كرة تتحرك على الشاشة ======
+function initGame2(){
+  let x = 180, y=320, dx=3, dy=3;
+  function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='green';
+    ctx.beginPath();
+    ctx.arc(x,y,20,0,Math.PI*2);
+    ctx.fill();
+    x+=dx; y+=dy;
+    if(x>canvas.width-20||x<20) dx=-dx;
+    if(y>canvas.height-20||y<20) dy=-dy;
+    animationId=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ====== Game 3: تلوين الشاشة ======
+function initGame3(){
+  let color='red';
+  canvas.addEventListener('click', ()=>{ color=color==='red'?'yellow':'red'; });
+  function loop(){
+    ctx.fillStyle=color;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    animationId=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ====== Game 4: مربع يتحرك مع اللمس ======
+function initGame4(){
+  let square={x:160,y:300,size:40};
+  canvas.addEventListener('touchmove', (e)=>{
+    let touch = e.touches[0];
+    square.x = touch.clientX - canvas.offsetLeft - square.size/2;
+    square.y = touch.clientY - canvas.offsetTop - square.size/2;
+  });
+  function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='purple';
+    ctx.fillRect(square.x,square.y,square.size,square.size);
+    animationId=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ====== Game 5: رسم دائرة مع الماوس ======
+function initGame5(){
+  let drawing=false;
+  canvas.addEventListener('mousedown',()=>drawing=true);
+  canvas.addEventListener('mouseup',()=>drawing=false);
+  canvas.addEventListener('mousemove',(e)=>{
+    if(drawing){
+      ctx.fillStyle='orange';
+      ctx.beginPath();
+      ctx.arc(e.offsetX,e.offsetY,5,0,Math.PI*2);
+      ctx.fill();
+    }
+  });
+}
+</script>
+
 </body>
 </html>
