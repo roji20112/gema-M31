@@ -2,16 +2,13 @@ name: Lua Command Bot
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
-  run-bot:
+  bot:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -19,10 +16,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install requirements
-        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Start bot
+      - name: Start Telegram Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: python bot.py
